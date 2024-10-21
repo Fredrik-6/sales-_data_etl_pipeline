@@ -25,3 +25,15 @@ except FileNotFoundError as e:
     print(f"Error: {e}")
 except Exception as e:
     print(f"An unexpected error occurred: {e}")
+
+# Inspect data
+print(bakery_sales.info())
+print(bakery_sales.describe())
+print(bakery_price.info())
+print(bakery_price.describe())
+
+bakery_sales.fillna(0, inplace=True)
+bakery_price.fillna(0, inplace=True)
+
+bakery_sales.drop_duplicates(inplace=True)
+bakery_price.drop_duplicates(inplace=True)
