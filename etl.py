@@ -3,7 +3,7 @@ import os
 
 # List files in the current directory
 print("Files in the current directory:")
-print(os.listdir())  # This will help you confirm what files are available
+print(os.listdir())  # Confirm what files are available
 
 # Specify the full paths to the CSV files
 bakery_sales_path = r"C:\Users\presetup\Documents\Personal Projects\ETL test\Kaggel Bakary Data\archive\bakery sales.csv"
@@ -57,5 +57,30 @@ merged_data.dropna(subset=['price', 'quantity_sold'], inplace=True)
 # Calculate total sales for each item
 merged_data['total_sales'] = merged_data['quantity_sold'] * merged_data['price']
 
+# Check for invalid entries in 'datetime' column
+# Replace non-date values with NaT
+invalid_datetime_entries = merged_data[~merged_data['datetime'].str.match(r'^\d{1,2}/\d{1,2}/\d{4} \d{1,2}:\d{2}$', na=False)]
+print("Invalid datetime entries:\n", invalid_datetime_entries)
+
+# Coerce invalid datetime entries to NaT
+merged_data['datetime'] = pd.to_datetime(merged_data['datetime'], dayfirst=True, errors='coerce')
+
+# Drop rows where 'datetime' is NaT
+merged_data.dropna(subset=['datetime'], inplace=True)
+
+# Extract only the date from the datetime column
+merged_data['date'] = merged_data['datetime'].dt.date
+
+# Select the relevant columns for analysis
+final_data = merged_data[['item_name', 'price', 'quantity_sold', 'total_sales', 'date']]
+
+# Rename columns for clarity
+final_data.rename(columns={'price': 'price_per_item'}, inplace=True)
+
 # Check the final DataFrame
-print(merged_data.head())
+print(final_data.head())
+#print(final_data[9000:9050])
+
+# Get the number of rows and columns
+# num_rows, num_columns = final_data.shape
+# print(f"Number of rows: {num_rows}")
