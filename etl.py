@@ -60,6 +60,9 @@ merged_data.dropna(subset=['price', 'quantity_sold'], inplace=True)
 # Calculate total sales for each item
 merged_data['total_sales'] = merged_data['quantity_sold'] * merged_data['price']
 
+# Remove entries with zero quantity sold or total sales
+merged_data = merged_data[(merged_data['quantity_sold'] > 0) & (merged_data['total_sales'] > 0)]
+
 # Check for invalid entries in 'datetime' column
 # Replace non-date values with NaT
 invalid_datetime_entries = merged_data[~merged_data['datetime'].str.match(r'^\d{1,2}/\d{1,2}/\d{4} \d{1,2}:\d{2}$', na=False)]
@@ -114,7 +117,7 @@ engine = create_engine(f'mysql+mysqlconnector://{username}:{password}@{host}:{po
 
 # Delete records from the bakery_sales table
 with engine.connect() as connection:
-    connection.execute(text("DELETE FROM bakery_sales;"))
+    connection.execute(text("TRUNCATE TABLE bakery_sales;"))
 
 # Load DataFrame into MySQL table
 final_data.to_sql(name='bakery_sales', con=engine, if_exists='append', index=False)
