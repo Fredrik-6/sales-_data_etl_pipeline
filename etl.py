@@ -1,5 +1,8 @@
 import pandas as pd
 import os
+from sqlalchemy import create_engine, text
+from urllib.parse import quote_plus
+
 
 # List files in the current directory
 print("Files in the current directory:")
@@ -72,7 +75,7 @@ merged_data.dropna(subset=['datetime'], inplace=True)
 merged_data['date'] = merged_data['datetime'].dt.date
 
 # Select the relevant columns for analysis
-final_data = merged_data[['item_name', 'price', 'quantity_sold', 'total_sales', 'date']]
+final_data = merged_data[['item_name', 'price', 'quantity_sold', 'total_sales', 'date']].copy()
 
 # Rename columns for clarity
 final_data.rename(columns={'price': 'price_per_item'}, inplace=True)
@@ -84,3 +87,36 @@ print(final_data.head())
 # Get the number of rows and columns
 # num_rows, num_columns = final_data.shape
 # print(f"Number of rows: {num_rows}")
+
+
+# --Data Loading Section---------
+
+# # Sample data for testing
+# final_data = pd.DataFrame({
+#     'item_name': ['angbutter', 'croissant', 'baguette', 'angbutter', 'angbutter'],
+#     'price_per_item': [4800.0, 2500.0, 3000.0, 4800.0, 4800.0],
+#     'quantity_sold': [1.0, 2.0, 3.0, 1.0, 2.0],
+#     'total_sales': [4800.0, 5000.0, 9000.0, 4800.0, 9600.0],
+#     'date': ['2019-07-11', '2019-07-11', '2019-07-12', '2019-07-13', '2019-07-13']
+# })
+
+# print(final_data)
+
+# DB connection
+username = 'Fredrik'
+password = quote_plus('Fre18wxyz@0603')
+database_name = 'bakery_sales_db'
+host = 'localhost'
+port = '3306'
+
+# Create SQLAlchemy engine
+engine = create_engine(f'mysql+mysqlconnector://{username}:{password}@{host}:{port}/{database_name}')
+
+# Delete records from the bakery_sales table
+with engine.connect() as connection:
+    connection.execute(text("DELETE FROM bakery_sales;"))
+
+# Load DataFrame into MySQL table
+final_data.to_sql(name='bakery_sales', con=engine, if_exists='append', index=False)
+
+print("Data loaded successfully!")
